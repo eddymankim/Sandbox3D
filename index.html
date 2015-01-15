@@ -1,0 +1,896 @@
+<html>
+<head>
+	<head>
+		<title>Sandbox3D alpha</title>
+
+		<!--Not sure if this is needed-->
+		<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+
+		<!--Meta tags to go full screen on iphones, doesn't work-->
+		<meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
+		<meta name="apple-mobile-web-app-capable" content="yes" />
+		<meta name="apple-mobile-web-app-status-bar-style" content="black" />
+
+
+		<!--Load custom icon for the browsers, doesn't work on node deployment-->
+		<link rel=”shortcut icon” href=”http://www.eddymankim.com/favicon.ico”>
+
+		<!--three.js library for webgl rendering-->
+		<!--https://github.com/mrdoob/three.js/-->
+		<script src="vendor/three.js/Three.js"></script>
+
+		<!--Custom three.js components-->
+		<script src="vendor/three.js/Detector.js"></script>
+		<script src="vendor/three.js/Stats.js"></script>
+		<script src="vendor/three.js/TrackballTouchControls.js"></script>
+		<!--<script src="vendor/three.js/PointerLockControls.js"></script>-->
+		<script src="vendor/three.js/AxisHelperModified.js"></script>
+		<script src="vendor/threex/THREEx.screenshot.js"></script>
+		<script src="vendor/threex/THREEx.WindowResize.js"></script>
+
+		<!--Local Jquery code, check if newer version is okay to use-->
+		<script type="text/javascript" src="js/jquery-1.7.1.min.js"></script>
+		<!--JqueryUI for the GUI-->
+		<script type="text/javascript" src="http://code.jquery.com/ui/1.8.18/jquery-ui.min.js"></script>
+		<!--jquery plugin for tabslideout-->
+		<!--http://wpaoli.building58.com/2009/09/jquery-tab-slide-out-plugin/-->
+		<script src="js/jquery.tabSlideOut.v1.3.js"></script>
+		<!--Fetch the online copy of JqueryUI theme: smoothness-->
+		<link type="text/css" href="http://code.jquery.com/ui/1.8.18/themes/smoothness/jquery-ui.css" rel="stylesheet" />	
+
+		<!--JS for the app-->
+		<script src="mInteractions.js"></script>
+		<script src="mGeometry.js"></script>
+		<script src="mScene.js"></script>
+		<script src="mLogin.js"></script>
+		<script src="mDialogs.js"></script>
+		<script src="mButtons.js"></script>
+
+		<!--nowjs clientside code-->
+		
+		<!--<script type="text/javascript" src="http://sandbox3d.cloudfoundry.com/now.js"></script>-->
+		<!-- <script type="text/javascript" src="http://sandbox3d.cloudfoundry.com/node_modules/now/dist/now.js"></script> -->
+		
+		<!-- <script type="text/javascript" src="/node_modules/now/dist/now.js"></script> -->
+		<script src="/nowjs/now.js"></script>
+		<!--<script type="text/javascript" src="http://localhost:8080/nowjs/now.js"></script>-->
+
+		<!--JqueryUI overrides & in-page styling & load custom icons-->
+		<style>
+
+			.ui-widget-overlay { background: #ffffff; opacity: 1.0; filter:Alpha(Opacity=100); }
+
+			.ui-dialog { position: absolute; padding: 2px; width: 300px; overflow: hidden; }
+			.ui-dialog .ui-dialog-titlebar { padding: 2px 4px; position: relative;  }
+			.ui-dialog .ui-dialog-title { float: left; margin: 0em 0px 0em 0; } 
+			.ui-dialog .ui-dialog-titlebar-close { position: absolute; right: 0em; top: 50%; width: 18px; margin: -10px 0 0 0; padding: 1px; height: 18px; }
+			.ui-dialog .ui-dialog-titlebar-close span { display: block; margin: 1px; }
+			.ui-dialog .ui-dialog-titlebar-close:hover, .ui-dialog .ui-dialog-titlebar-close:focus { padding: 0; }
+			.ui-dialog .ui-dialog-content { position: relative; border: 0; padding: 2px 2px 0 0; background: none; overflow: auto; zoom: 1; }
+			.ui-dialog .ui-dialog-buttonpane { text-align: left; border-width: 0px 0 0 0; background-image: none; margin: 0 0 0 0; padding: 0 0 0 0; }
+			.ui-dialog .ui-dialog-buttonpane .ui-dialog-buttonset { float: right; }
+			.ui-dialog .ui-dialog-buttonpane button { margin: .5em .4em .5em 0; cursor: pointer; }
+			.ui-dialog .ui-resizable-se { width: 10px; height: 10px; right: 2px; bottom: 2px; }
+			.ui-draggable .ui-dialog-titlebar { cursor: move; }
+
+			.ui-widget { font-family: Helvetica,Arial; font-size: 10px; }
+			.ui-corner-all, .ui-corner-top, .ui-corner-left, .ui-corner-tl { -moz-border-radius-topleft: 2px; -webkit-border-top-left-radius: 2px; -khtml-border-top-left-radius: 2px; border-top-left-radius: 2px; }
+			.ui-corner-all, .ui-corner-top, .ui-corner-right, .ui-corner-tr { -moz-border-radius-topright: 2px; -webkit-border-top-right-radius: 2px; -khtml-border-top-right-radius: 2px; border-top-right-radius: 2px; }
+			.ui-corner-all, .ui-corner-bottom, .ui-corner-left, .ui-corner-bl { -moz-border-radius-bottomleft: 2px; -webkit-border-bottom-left-radius: 2px; -khtml-border-bottom-left-radius: 2px; border-bottom-left-radius: 2px; }
+			.ui-corner-all, .ui-corner-bottom, .ui-corner-right, .ui-corner-br { -moz-border-radius-bottomright: 2px; -webkit-border-bottom-right-radius: 2px; -khtml-border-bottom-right-radius: 2px; border-bottom-right-radius: 2px; }
+
+			.customselectoneicon {background-image: url(imgs/buttons/selectone.png) !important;right: 0px;}
+			.customselectmultipleicon {background-image: url(imgs/buttons/selectmultiple.png) !important;right: 0px;}
+			.customselectgroupicon {background-image: url(imgs/buttons/selectgroup.png) !important;right: 0px;}
+			.customgroupbuttonicon {background-image: url(imgs/buttons/groupbutton.png) !important;right: 0px;}
+			.customdeletebuttonicon {background-image: url(imgs/buttons/deletebutton.png) !important;right: 0px;}
+			.customdeleteallbuttonicon {background-image: url(imgs/buttons/deleteallbutton.png) !important;right: 0px;}
+			.customcreatenodeicon {background-image: url(imgs/buttons/createnode.png) !important;right: 0px;}
+			.customcreatelineicon {background-image: url(imgs/buttons/createline.png) !important;right: 0px;}
+			.customcreatefaceicon {background-image: url(imgs/buttons/createface.png) !important;right: 0px;}
+			.customcreatepolylineicon {background-image: url(imgs/buttons/createpolyline.png) !important;right: 0px;}			
+			.customstickerlikeicon {background-image: url(imgs/buttons/stkrbtn_like.png) !important;right: 0px;}
+			.customstickertreeicon {background-image: url(imgs/buttons/stkrbtn_tree.png) !important;right: 0px;}
+			.customstickernoteicon {background-image: url(imgs/buttons/stkrbtn_note.png) !important;right: 0px;}
+			.customstickerpersicon {background-image: url(imgs/buttons/stkrbtn_person.png) !important;right: 0px;}
+			.customstickerdislikeicon {background-image: url(imgs/buttons/stkrbtn_dislike.png) !important;right: 0px;}
+
+			.slide-out-div {
+				padding: 10px;
+				margin: 0px;
+				width: 130px;
+				height: 360px;
+				background: #444444;
+				border: #cab7a7 0px solid;
+				z-index: 1900;
+				font-family	: helvetica, arial;
+				color 		: #AAAAAA;
+			} 
+
+			.slide-out-div h1 {
+				font-size: 10px;
+				padding-left:3px;
+				text-align:center;
+			}
+
+			.handle {
+			}
+
+			div.inputbox{
+				float:bottom;
+			}
+
+			#container{
+				z-index		: 1;
+				position 	: absolute;
+				top			: 0px;
+				left		: 0px;
+				cursor 		: crosshair;
+			}
+
+			#greetingbox h1 {
+				font-weight	: bolder;
+				font-size	: 36px;				
+				text-align	: left;
+				color 		: #FFFFFF;
+				font-family	: helvetica, arial;
+				text-shadow : #663300 2px 1px 20px;
+				padding-left: 10px; 
+				padding-top: 10px; 
+			}
+
+			#greetingbox p {
+				font-size 	: 12px; 
+				text-align 	: left; 
+				padding-left: 10px; 
+				padding-right:0px;
+				padding-top: 0px;
+				padding-bottom:0px;
+				margin-top:0px;
+				margin-bottom:0px;
+				font-weight	: lighter;
+				color 		: #444444;
+				font-family	: helvetica, arial;
+			}
+
+			#greetingboxsup {
+				font-size	: 14px;		
+				font-weight	: bold;
+				position 	: relative;
+				top 		: -48px;
+				left 		: 26px;
+				color 		: #FFFFFF;
+				font-family	: helvetica, arial;
+				text-shadow : #663300 0px 0px 8px;
+				width 		: 30px;
+			}
+
+			#cursortextbox {
+			    position 	: absolute;
+			    float 		: left;
+				z-index 	: -1;
+				padding		: 5px;
+				font-size	: 10px;
+				max-width	: 200px;
+				background-color: #FFFFFF;
+				border: 1px solid #F8F8F8;
+				box-shadow: 0px 0px 15px #AAAAAA;
+				font-family	: helvetica, arial;
+				color:#666666;
+			}​
+
+			#cursortextbox p {
+				font-weight	: bold;
+			}
+
+		</style>
+
+		<script type="text/javascript">
+
+
+			var PI2 = Math.PI * 2;
+
+			//-------------------- GLOBALS -----------------------//
+			var g_user = {};
+
+			var SELECTED, SELECTED_id, g_moveStartPoint, g_moveEndPoint;
+
+			var g_SmoothSelection=[],
+				g_nodetemparray=[];
+
+			var g_container, g_renderer, g_camera, g_scene, g_theScene, g_cameraControls, g_projector,g_axishelper, g_groundplane, g_threejsstats, dae;
+
+			var g_renderTexture;
+			var g_sceneoverlay, g_camera2d;
+			var g_gridSize = 400, g_gridNum = 20, g_halfGridSize = g_gridSize*0.5, g_gridInterval = g_gridSize/g_gridNum;
+
+			//Load THREE.js sprite textures
+			var g_avatarimg = THREE.ImageUtils.loadTexture("imgs/avatar.png"),
+				g_ballimg = THREE.ImageUtils.loadTexture("imgs/ball.png"),
+				g_ballselectedimg = THREE.ImageUtils.loadTexture("imgs/ballselected.png"),
+				g_stickerlikeimg = THREE.ImageUtils.loadTexture("imgs/sticker_like.png"),
+				g_stickernoteimg = THREE.ImageUtils.loadTexture("imgs/sticker_note.png"),
+				g_stickertreeimg = THREE.ImageUtils.loadTexture("imgs/sticker_tree.png"),
+				g_stickerdislikeimg = THREE.ImageUtils.loadTexture("imgs/sticker_dislike.png");
+
+			var g_defaultnodesize = 0.025;
+
+			var  g_othercamera;
+
+			var UserAvatars=[];
+			var UserViewer;
+
+			//Global flags
+			var g_haswebgl, g_movecamera=true;
+
+			var g_whichButton		=0,
+				g_noButton			=0,
+				g_selectOneButton	=1,
+				g_selectMultiButton	=2,
+				g_selectGroupButton	=3,
+				g_moveButton		=4,
+				g_groupButton 		=5,
+				g_delSelectedButton	=6,
+				g_delAllButton		=7,
+				g_rotateButton 		=8,
+				g_createNodeButton 	=9,
+				g_createLineButton 	=10,
+				g_createPlineButton =11,
+				g_createFaceButton 	=12,
+				g_createBoxButton 	=13,
+				g_importButton 		=14,
+				g_stkrbtn_like 		=15,
+				g_stkrbtn_note 		=16,
+				g_stkrbtn_tree 		=17,
+				g_stkrbtn_person	=18,
+				g_stkrbtn_dislike	=19;
+
+			//THIS SEEMS REDUNDANT......
+			var g_sticker_like 		=1,
+				g_sticker_note		=2,
+				g_sticker_tree		=3,
+				g_sticker_person	=4,
+				g_sticker_dislike	=5;
+
+			//DON'T THINK THIS IS NEEDED
+			var n0 = null, n1 = null, n2 = null;
+
+			//When document is ready..
+		    $(document).ready(function(){
+
+		    	g_scene = new THREE.Scene();
+		    	g_sceneoverlay= new THREE.Scene(); 
+		    	//---------------------------- LOGIN -------------------------------//
+		    	//refer to mLogin.js
+		        ScreenNameLogin();
+
+				//------------------- RUN EVERYTHING AFTER LOGIN -------------------//
+				$( "#greetingbox" ).bind( "dialogclose", function(event, ui) {
+
+					//Load all the dialogs and GUI
+					//refer to mDialogs.js
+					loadJqueryDialogs();
+
+					//------------- CHANGE SO THAT USER CAN UPLOAD ------------//
+					var loader = new THREE.ColladaLoader();
+					loader.options.convertUpAxis = true;
+					loader.load( './dae/meshtest.dae', function colladaReady( collada ) {
+
+						dae = collada.scene;
+						//skin = collada.skins[ 0 ];
+						dae.scale.x = dae.scale.y = dae.scale.z = 1;
+						dae.position.set(0,0,0);
+						dae.updateMatrix();
+						dae.updateMatrixWorld();
+
+						init();
+						animate();
+
+					} );
+				});
+
+		    });
+
+		</script>
+
+		<script type="text/javascript">
+
+			//----------- OTHER FUNCTIONS AND METHODS GO HERE ----------//
+
+			//----------- THREEJS INITIALIZE -----------//
+			function init() {
+				
+				if( Detector.webgl ){
+					g_haswebgl=true;
+					g_renderer = new THREE.WebGLRenderer({
+						antialias		: false,	// to get smoother output
+						preserveDrawingBuffer	: false	// to allow screenshot
+					});
+				}else{
+					g_haswebgl=false;
+					g_renderer	= new THREE.CanvasRenderer();
+					hideJqueryDialogs();
+				}
+
+				g_renderer.setSize( window.innerWidth, window.innerHeight );
+				g_renderer.shadowMapEnabled = true;
+				g_renderer.shadowMapSoft = true;
+				g_renderer.sortObjects = false; // not sure if this is needed
+				g_renderer.autoClear = false;
+
+				g_renderTexture=new THREE.WebGLRenderTarget( 512, 512, { minFilter: THREE.LinearFilter, magFilter: THREE.LinearFilter, format: THREE.RGBAFormat } );
+
+				g_container = document.getElementById('container');
+				g_container.appendChild(g_renderer.domElement);
+
+				//Render gradient background
+				renderGradientbg();
+
+				//THREEJS STUFF
+				//Create a camera and set its position
+				g_camera2d=new THREE.OrthographicCamera(-200.0, 300.0, -300.0, 300.0, -1000, 1000 );
+				g_camera2d.position.z = 500;
+				g_sceneoverlay.add(g_camera2d);
+
+				var plane = new THREE.PlaneGeometry( 200.0, 200.0 );
+				//var mate = new THREE.MeshLambertMaterial( { color: 0xAADFF1} );
+
+				var mate = new THREE.MeshBasicMaterial({color: 0xFFFFFF, map: g_renderTexture});
+				var quad = new THREE.Mesh( plane, mate );
+
+				quad.position.z = 0.0;
+				quad.position.x=-100.0;
+				quad.position.y=-200.0;
+				//quad.rotation.x = Math.PI;
+				//quad.rotation.z = Math.PI;
+				quad.scale.z=-1.0;
+				quad.doubleSided=true;
+				g_sceneoverlay.add( quad );
+
+ 				g_othercamera = new THREE.PerspectiveCamera( 60, window.innerWidth / window.innerHeight, 1, 10000 );
+
+				g_camera = new THREE.PerspectiveCamera( 60, window.innerWidth / window.innerHeight, 1, 10000 );
+				g_camera.position.set( /*x*/300, /*z*/200, /*y*/300 );
+				//Create a new THREE.js scene
+				
+				//Just some fancy fog effect
+				g_scene.fog = new THREE.FogExp2( 0xFFFFFF, 0.001 );
+				//Add camera to the THREE.js scene
+				g_scene.add( g_camera );
+				//Create a camera contol
+				g_cameraControls = new THREE.TrackballTouchControls( g_camera );
+				//Transparently support window resize
+				THREEx.WindowResize.bind(g_renderer, g_camera);
+
+				//Create a new mScene
+				g_theScene = new mScene();
+				//Get the first update
+				g_theScene.RequestServerUpdate();
+				g_theScene.Render();
+
+				
+				
+				//----------------- Add THREE.js objects here --------------//
+				g_projector = new THREE.Projector();
+
+				//Draw grid
+				addGridToScene();
+
+				//Create ground plane
+				//FIXXXX
+				addInvisibleGroundPlane();
+
+				//THREE.js STATS
+				g_threejsstats = new Stats();
+				g_threejsstats.domElement.style.position = 'absolute';
+				g_threejsstats.domElement.style.bottom = '0px';
+				g_threejsstats.domElement.style.zIndex = 2000;
+				g_threejsstats.domElement.children[ 0 ].children[ 0 ].style.color = "#AAAAAA";
+				g_threejsstats.domElement.children[ 0 ].style.background = "transparent";
+				g_threejsstats.domElement.children[ 0 ].children[ 1 ].style.display = "none";
+				g_container.appendChild( g_threejsstats.domElement );
+
+				//Add gizmo to the scene
+				g_axishelper = new THREE.AxisHelperModified();
+				g_axishelper.scale.x = g_axishelper.scale.y = g_axishelper.scale.z = 0.25;
+				//Place it far away for now
+				g_axishelper.position.set(10000,10000,10000);
+				g_scene.add( g_axishelper );
+
+				//To do specifically when WEBGL enabled
+				if(g_haswebgl){
+					//g_scene.add( dae );
+					addLightsToScene();
+				}
+
+				//automatic updates every 3 seconds (3000ms)
+				setInterval ( "automaticUpdates()", 3000 );
+				
+				//Bind interaction events: refer to mInteractions.js
+				window.addEventListener( 'keydown', 		onWindowKeyDown, false );
+				g_container.addEventListener( 'mousedown', 	onContainerMouseDown, false );
+				g_container.addEventListener( 'mouseup', 	onContainerMouseUp, false );
+				g_container.addEventListener( 'mousemove', 	onContainerMouseMove, false );
+				g_container.addEventListener( 'touchstart', onContainerTouchStart, false );
+
+
+
+			}
+
+			function automaticUpdates (){
+				
+				if(g_whichButton==g_noButton ) g_theScene.RequestServerUpdate();
+			}
+
+			function animate() {
+
+				requestAnimationFrame( animate );
+				render();
+				g_threejsstats.update();
+
+			}
+
+			function render() {
+
+				// update camera controls
+				if(g_movecamera) g_cameraControls.update();
+
+
+				g_renderer.clear();
+
+				g_renderer.render( g_scene, g_camera );
+				if (UserViewer!=null) {
+				g_othercamera.position=UserViewer.GLobj.position.clone();
+				g_othercamera.lookAt( new THREE.Vector3(0.0, 0.0, 0.0) );
+				
+				g_renderer.render( g_scene,  g_othercamera, g_renderTexture, true );
+
+				
+
+				//g_renderer.render( g_scene, g_camera2d); 
+				g_renderer.render( g_sceneoverlay, g_camera2d );
+			}
+
+				
+
+
+				//if(!g_movingsomething) theScene.Render();
+
+				//if something is selected 
+				if( g_SmoothSelection.length > 0 ){
+					enableModifyButtons();
+				}
+				else{
+					disableModifyButtons();
+				}
+
+			}
+
+			function addLightsToScene(){
+				// create a point light
+				var pointLight = new THREE.PointLight(0xFFFFFF);
+				// set its position
+				pointLight.position.x = -1000;
+				pointLight.position.y = 500;
+				pointLight.position.z = 1000;
+				// add to the scene
+				g_scene.add(pointLight);
+
+				// create another point light
+				var pointLight2 = new THREE.PointLight(0xFFFFFF);
+				// set its position
+				pointLight2.position.x = 500;
+				pointLight2.position.y = 1000;
+				pointLight2.position.z = -500;
+				// add to the scene
+				g_scene.add(pointLight2);
+
+				// create another point light
+				var pointLight2 = new THREE.PointLight(0xFFFFFF);
+				// set its position
+				pointLight2.position.x = 500;
+				pointLight2.position.y = -1000;
+				pointLight2.position.z = -100;
+				// add to the scene
+				g_scene.add(pointLight2);
+			}
+
+			function addGridToScene(){
+				// some code for a grid on the x-y plane
+				var glineMaterial = new THREE.LineBasicMaterial({ color: 0xBDBDBD, linewidth: 0.2, depthTest: true});
+				var xAxesMaterial = new THREE.LineBasicMaterial({ color: 0xBDBDBD, linewidth: 2.0,});
+				var yAxesMaterial = new THREE.LineBasicMaterial({ color: 0xBDBDBD, linewidth: 2.0,});
+				var zAxesMaterial = new THREE.LineBasicMaterial({ color: 0xBDBDBD, linewidth: 2.0,});
+				for ( var i = 0; i < g_gridNum+1; i ++ ) {
+					var gridLines = new THREE.Geometry();
+	    			gridLines.vertices.push(new THREE.Vertex(new THREE.Vector3(-g_halfGridSize, 0.1, -g_halfGridSize+g_gridInterval*i)));
+	    			gridLines.vertices.push(new THREE.Vertex(new THREE.Vector3(g_halfGridSize, 0.1, -g_halfGridSize+g_gridInterval*i)));
+	    			var line1 = new THREE.Line(gridLines, glineMaterial);
+	    			g_scene.add(line1);
+				}
+				for ( var i = 0; i < g_gridNum+1; i ++ ) {
+					var gridLines = new THREE.Geometry();
+	    			gridLines.vertices.push(new THREE.Vertex(new THREE.Vector3(-g_halfGridSize+g_gridInterval*i, 0, -g_halfGridSize)));
+	    			gridLines.vertices.push(new THREE.Vertex(new THREE.Vector3(-g_halfGridSize+g_gridInterval*i, 0, g_halfGridSize)));
+	    			var line1 = new THREE.Line(gridLines, glineMaterial);
+	    			g_scene.add(line1);
+				}
+				
+				//Z axis
+				var zLineGeo = new THREE.Geometry();
+    			zLineGeo.vertices.push(new THREE.Vertex(new THREE.Vector3(0, 0, 0)));
+    			zLineGeo.vertices.push(new THREE.Vertex(new THREE.Vector3(0, 25, 0)));
+    			var zLine = new THREE.Line(zLineGeo, zAxesMaterial);
+    			g_scene.add(zLine);
+    			//Y axis
+    			var yLineGeo = new THREE.Geometry();
+    			yLineGeo.vertices.push(new THREE.Vertex(new THREE.Vector3(0, 0, 0)));
+    			yLineGeo.vertices.push(new THREE.Vertex(new THREE.Vector3(g_halfGridSize, 0, 0)));
+    			var yLine = new THREE.Line(yLineGeo, yAxesMaterial);
+    			g_scene.add(yLine);
+    			//X axis
+    			var xLineGeo = new THREE.Geometry();
+    			xLineGeo.vertices.push(new THREE.Vertex(new THREE.Vector3(0, 0, 0)));
+    			xLineGeo.vertices.push(new THREE.Vertex(new THREE.Vector3(0, 0, g_halfGridSize)));
+    			var xLine = new THREE.Line(xLineGeo, xAxesMaterial);
+    			g_scene.add(xLine);
+			}
+
+			function addInvisibleGroundPlane(){
+				g_groundplane = new THREE.Mesh(new THREE.PlaneGeometry(g_gridSize, g_gridSize, 20, 20), new THREE.MeshBasicMaterial( { color: 0xFFFFFF, opacity: 0} ));			
+				//plane.doubleSided = true;
+				//plane.dynamic = true;
+				//plane.castShadow = true;
+				//plane.receiveShadow = true;
+				g_groundplane.rotation.x = - 90 * Math.PI / 180;
+				g_scene.add( g_groundplane );	
+			}
+
+			function renderGradientbg(){
+				//for background gradient
+				var gradientbg = document.getElementById("gradientbg");
+				var ctx_gradientbg = gradientbg.getContext("2d");
+				ctx_gradientbg.clearRect(0, 0, window.innerWidth, window.innerHeight);
+				var lingrad = ctx_gradientbg.createLinearGradient(0,0,0,60);				
+				lingrad.addColorStop(0, '#AAAAAA');
+				lingrad.addColorStop(1, '#FFFFFF');
+				ctx_gradientbg.fillStyle = lingrad;
+				ctx_gradientbg.fillRect(0,0,window.innerWidth,window.innerHeight);
+			}
+
+			function clearAllToolsSelections() {
+
+				g_whichbutton = g_nobutton;
+				//g_locked = false;
+				//g_movingsomething = false;
+				//send the gizmo far away again
+				g_axishelper.position.set(10000,10000,10000);
+				Unselect();
+				//document.getElementById('status').innerHTML	= g_statusboxtext + "All tools and selections disabled.. just viewing";
+				console.log("tools cleared...");
+			}
+
+			function updateNodeXYZ (threejsobj, _id){
+				g_theScene.updateNodeXYZ(threejsobj, _id);
+			}
+
+			//for non-webgl node rendering
+			var programFill = function ( context ) {
+
+				context.clearRect();
+				context.beginPath();
+				context.arc( 0, 0, 0.2, 0, PI2, true );
+				context.closePath();
+				context.fill();
+			}
+			//for non-webgl node rendering
+			var programStroke = function ( context ) {
+
+				context.clearRect();
+				context.beginPath();
+				context.arc( 0, 0, 0.2, 0, PI2, true );
+				context.fillStyle = "white";
+				context.fill();
+				context.lineWidth = 0.1;
+				context.stroke();
+				context.closePath();
+			}
+
+			//not really using this
+			function clearMongoDB (){
+
+				//g_cleared = true;
+				theScene.ClearMongoDB();
+				//change the status text to alert the user
+				//g_statustextbox.innerHTML	= g_statusboxtext + "CLEAR FAILED.. click CLEAR button again..";
+
+				//only when g_cleared is true will the page refresh itself
+				//if(g_cleared)location.reload();
+
+				//theScene.Objects.length = 0;
+				//Unselect();
+				//theScene.RequestServerUpdate();
+				//g_axishelper.position.set(10000,10000,10000);
+			}
+
+			//------------------ TODO: NOWJS STUFF ---------------------//
+			now.UserData={};
+
+			
+
+			function moveTo(x,y,z){
+				now.UserData.pos.set(/*x*/x,/*z*/y,/*y*/z);
+				now.UserPositionChanged(now.UserData.id, now.UserData.pos);
+			}
+
+			now.deleteAllLocal=function() {
+				Unselect();
+				disableModifyButtons();	
+
+				for (var k=0; k<g_theScene.Objects.length;++k){
+					var o=g_theScene.Objects[k];
+					g_scene.remove(o.GLobj);
+				}
+			}
+
+			now.deleteSelectedLocal=function(selection) {
+
+				//INCORRRECTT FIXXXXX
+				if ( selection.length > 0 ) {
+					for (var k=0; k<selection.length;++k){
+						g_scene.remove(selection[k].GLobj);
+					}
+				}
+			}
+
+			now.UpdateUserPosition=function(id, pos) {
+				if (UserAvatars[id]==undefined || UserAvatars[id]==null) return;
+				UserAvatars[id].GLobj.position.set(pos.x, pos.y, pos.z);
+			}
+
+			now.OnUserListChanged = function(){
+				UserListChanged();
+			};
+
+			now.BroadCastNewObject=function(obj){
+				g_theScene.AddObjectFromDatabase(obj);
+			}
+
+			function AddDaeVertices(obj){
+
+				if (obj.geometry!=undefined && obj.geometry!=null && obj.geometry.vertices!=undefined && obj.geometry.vertices!=null) {
+
+					var prevert=[];
+
+
+					//dae.updateMatrix();
+					//dae.updateMatrixWorld();
+
+					for(var i=0; i<obj.geometry.vertices.length; ++i){
+						var t0 = obj.matrixWorld.multiplyVector3(obj.geometry.vertices[i].position);
+						prevert.push(g_theScene.AddNode(t0.z, t0.x, t0.y));			
+					}
+
+
+					for(var i=0; i<obj.geometry.faces.length; ++i) {
+						g_theScene.AddFace(
+							prevert[obj.geometry.faces[i].a],
+							prevert[obj.geometry.faces[i].b],
+							prevert[obj.geometry.faces[i].c]
+						);
+					}
+				}
+
+				if (obj.children==null || obj.children==undefined || obj.children.length==0) return;
+				for(var i=0; i<obj.children.length; ++i) {
+					AddDaeVertices(obj.children[i]);
+				}
+			}
+
+			function UserListChanged(){
+
+				//CHECK IF USER LEFT
+				for(var uid in UserAvatars) {
+					
+					//if the this one doesn't exist on the server, remove it from the scene, local array, etc.
+					if (now.UserList[uid]==undefined || now.UserList[uid]==null) {
+
+						var person=UserAvatars[uid].name;
+						var personToRemove = "#"+ person;
+						//now.distributeMessage(person+" joined the session.<br>");
+						$(personToRemove).remove();
+						//remove from the threejs scene
+						g_scene.remove(UserAvatars[uid].GLobj);
+						//remove from the local array
+						//UserAvatars[uid]=undefined;
+						delete UserAvatars[uid];
+						//UserAvatars.splice(uid,1);
+						return;
+					}
+				}
+
+				//CHECK IF USER ENTERED
+
+
+				for(var uid in now.UserList) {
+
+					if (UserAvatars[uid]==undefined || UserAvatars[uid]==null) {
+						var person=now.UserList[uid].name;
+
+						//now.distributeMessage(person+" exited the session.<br>");
+
+						$("#onlineUserWindowInnerDiv").append("<div style='float:top;margin-bottom:2px;' id="+ person +">"+ person +"<img src = 'imgs/greendot.png' style='margin-bottom:-2px;float:left;' /></div>");
+
+						var personSelector = "#"+ person;
+
+	
+
+
+					$(personSelector).mouseover(function(event){ $('#cursortextbox').css('z-index', 2000); });
+					
+					$(personSelector).mousemove(person, function(event){ 
+						//console.log(event.pageX+", "+event.pageY);
+						$('#cursortextbox').css({left:event.pageX - 150, top:event.pageY + 10});  
+						$('#cursortextbox').html("Click to see what <b>"+event.data+"</b> is seeing" );
+					});
+					
+					$(personSelector).mouseout(function(event){ $('#cursortextbox').css('z-index', -1); });
+					
+
+						
+
+						UserAvatars[uid]={};
+						UserAvatars[uid].name = person;
+						UserAvatars[uid].GLobj = new THREE.Sprite({ map: g_avatarimg, useScreenCoordinates: false, alignment: THREE.SpriteAlignment.bottomCenter, affectedByDistance : true});
+					
+						UserAvatars[uid].GLobj.scale.x = UserAvatars[uid].GLobj.scale.y = 0.2;
+
+						$(personSelector).click({user:UserAvatars[uid]}, function(event){ 
+						UserViewer=event.data.user; 
+					});
+						//RENDER THE AVATAR IN 3D SPACE
+						if (uid!=now.UserData.id) {
+						
+							g_scene.add( UserAvatars[uid].GLobj );
+						}
+						
+					}
+					UserAvatars[uid].GLobj.position.set(now.UserList[uid].pos.x, now.UserList[uid].pos.y, now.UserList[uid].pos.z);
+				}
+
+			}
+
+		</script>
+
+	</head>
+<body>
+	
+	<!--Greeting Box for Screenname Input-->
+    <div id="greetingbox">
+        <h1 style="margin-bottom:0px; margin-top:10px;">
+        	Sandbox3D<div id="greetingboxsup">alpha</div>			
+        </h1>
+        <p> 
+        	Sandbox3D is an experimental web app for<br>
+        	<b>real-time design collaboration</b> developed by<br> 
+        	Eddy Man Kim for his MDesS thesis project at <br>Harvard University Graduate School of Design.<br>
+        	<br>
+        	Project advisor: Panagiotis Michalatos<br>
+        	<br>
+        	<br>
+        	<br>
+        	Please enter a screen name to continue:
+        </p>
+    	<form>
+			<input type="text" id="screenname" class="text ui-widget-content ui-corner-all" style="margin-left: 10px; margin-top: 8px; padding:4px; font-size:16px; font-family:helvetica,arial; font-weight:bold; color:bca691; width: 270px;"/>
+		</form>
+		<button id="submitscreenname" style="float:left; margin-left: 10px; font-size:12px; "> Submit </button>
+    </div>
+
+    <!--Slide-out main menu-->
+    <div class="slide-out-div">
+        <a class="handle" href="http://link-for-non-js-users.html">Content</a>
+        
+        <h1>Click the buttons below to show hidden toolbars</h1>
+
+       	<button id="toggleSelectToolbar" style="width: 129px;">Select</button>       	
+       	<button id="toggleModifyToolbar" style="width: 129px;">Modify</button>       	
+       	<button id="toggleCreateToolbar" style="width: 129px;">Create</button>
+       	<button id="toggleStickersToolbar" style="width: 129px;">Stickers</button>
+       	<br>
+       	<br>
+       	<button id="toggleViewToolbar" style="width: 129px;">Render Options</button>
+       	<button id="toggleWorkplaneToolbar" style="width: 129px;">Workplane Options</button>
+       	<br>
+       	<br>
+       	<button id="toggleChatWindow" style="width: 129px;">Chat Window</button>
+       	<button id="toggleOnlineUserWindow" style="width: 129px;">Online Users</button>
+       	<button id="togglePropertiesWindow" style="width: 129px;">Properties</button>
+       	<br>
+       	<br>
+       	<button id="toggleProjectInfoWindow" style="width: 129px;">Project Information</button>
+       	<br>
+       	<br>  
+       	<button id="toggleHideAllDialog" style="width: 129px;">Hide all windows</button>  
+
+    </div>
+
+    <!--Wrapper DIV-->
+	<div id="container"></div>
+    	
+	<!--Other JqueryUI windows-->
+	<div id="selectToolbar" title="Select">
+		<button id="selectone" style="margin:0px; height:24px; width:24px"></button>
+		<button id="selectmultiple" style="margin:0px; height:24px; width:24px"></button>
+		<button id="selectgroup" style="margin:0px; height:24px; width:24px"></button>
+		<button id="selectcancel" style="margin:0px; height:24px; width:24px"></button>
+	</div>
+
+	<div id="modifyToolbar" title="Modify">
+		<button id="movebutton" style="margin:0px; height:24px; width:24px"></button>
+		<button id="groupbutton" style="margin:0px; height:24px; width:24px"></button>
+		<button id="deletebutton" style="margin:0px; height:24px; width:24px"></button>
+		<button id="deleteallbutton" style="margin:0px; height:24px; width:24px"></button>
+		<button id="modifycancel" style="margin:0px; height:24px; width:24px"></button>
+	</div>
+
+	<div id="createToolbar" title="Create">
+		<button id="createnode" style="margin:0px; height:24px; width:24px"></button>
+		<button id="createline" style="margin:0px; height:24px; width:24px"></button>
+		<button id="createpolyline" style="margin:0px; height:24px; width:24px"></button>
+		<button id="createface" style="margin:0px; height:24px; width:24px"></button>
+		<button id="importfile" style="margin:0px; height:24px; width:24px"></button>
+		<button id="createcancel" style="margin:0px; height:24px; width:24px"></button>
+	</div>
+
+	<div id="stickersToolbar" title="Stickers">
+		<button id="stkrbtn_like" style="margin:0px; height:24px; width:24px"></button>
+		<button id="stkrbtn_dislike" style="margin:0px; height:24px; width:24px"></button>
+		<button id="stkrbtn_note" style="margin:0px; height:24px; width:24px"></button>
+		<button id="stkrbtn_tree" style="margin:0px; height:24px; width:24px"></button>
+		<button id="stkrbtn_person" style="margin:0px; height:24px; width:24px"></button>
+		<button id="stkrcancel" style="margin:0px; height:24px; width:24px"></button>
+	</div>
+
+	<div id="viewToolbar" title="View Options">
+	</div>
+
+	<div id="workplaneToolbar" title="Workplane Options">
+	</div>
+
+	<div id="propertiesWindow" title="Properties">
+		<div id="propertiesWindowTop" class="ui-widget-content"style="background: #EEEEEE; color:#666666; width:222px; height:88px; padding:3px; overflow:scroll;overflow-y:scroll;overflow-x:hidden; vertical-align:top;">
+		</div>
+		<div id="propertiesWindowBottom">
+    		<input type="text" id="comment-input" class="text ui-widget-content ui-corner-all"  style="float:left;width:140px;height:24px; margin-top: 6px;margin-right: 4px;margin-left: 4px; padding:2px; font-family:helvetica,arial; font-weight:bold; color:#666666;">
+			<button id="appendcomment" style="margin-top: 6px;"> Comment </button>
+		</div>	
+	</div>
+
+	<div id="chatWindow" title="Chat Window">
+		<div id="chatWindowTop" class="ui-widget-content"style="background: #EEEEEE; color:#666666; width:222px; height:88px; padding:3px; overflow:scroll;overflow-y:scroll;overflow-x:hidden; vertical-align:top;">
+		</div>
+		<div id="chatWindowBottom">
+    		<input type="text" id="chat-input" class="text ui-widget-content ui-corner-all"  style="float:left;width:169px;height:24px; margin-top: 6px;margin-right: 4px;margin-left: 4px; padding:2px; font-family:helvetica,arial; font-weight:bold; color:#666666;">
+			<button id="sendchat" style="margin-top: 6px;"> Send </button>
+		</div>			
+	</div>
+
+	<div id="onlineUserWindow" title="Online Users">
+		<div id="onlineUserWindowInnerDiv" class="ui-widget-content"style="float:bottom; background: #EEEEEE; color:#666666; width:222px; height:63px; padding:3px; overflow:scroll;overflow-y:scroll;overflow-x:hidden; float: bottom">
+		</div>
+	</div>
+
+	<div id="projectInfoWindow" title="Project Information">
+	</div>
+    
+
+    <!--for gradient background-->
+    <canvas id="gradientbg" style="z-index: 0; position:absolute; left:0px; top:0px; height:100%; width:100%;" ></canvas>
+
+    <!--textbox that follows the cursor-->
+	<div id="cursortextbox"> </div>​
+
+
+</body>
+</html>

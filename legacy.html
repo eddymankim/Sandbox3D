@@ -1,0 +1,1073 @@
+<!DOCTYPE html PUBLIC "-//WAPFORUM//DTD XHTML Mobile 1.1//EN" "http://www.openmobilealliance.org/tech/DTD/xhtml-mobile11.dtd">
+<html>
+	<head>
+		<title>Sandbox3D</title>
+
+		<!--Not sure if this is needed-->
+		<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+
+		<!--Meta tags to go full screen on iphones, doesn't work-->
+		<meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
+		<meta name="apple-mobile-web-app-capable" content="yes" />
+		<meta name="apple-mobile-web-app-status-bar-style" content="black" />
+
+
+		<!--Load custom icon for the browsers, doesn't work on node deployment-->
+		<link rel=”shortcut icon” href=”http://www.eddymankim.com/favicon.ico”>
+
+		<!--three.js library for webgl rendering-->
+		<!--https://github.com/mrdoob/three.js/-->
+		<script src="vendor/three.js/Three.js"></script>
+
+		<!--Custom three.js components-->
+		<script src="vendor/three.js/Detector.js"></script>
+		<script src="vendor/three.js/Stats.js"></script>
+		<script src="vendor/three.js/TrackballTouchControls.js"></script>
+		<script src="vendor/three.js/AxisHelperModified.js"></script>
+		<script src="vendor/threex/THREEx.screenshot.js"></script>
+		<script src="vendor/threex/THREEx.WindowResize.js"></script>
+
+		<!--Local Jquery code, check if newer version is okay to use-->
+		<script type="text/javascript" src="js/jquery-1.7.1.min.js"></script>
+		<!--JqueryUI for the GUI-->
+		<script type="text/javascript" src="http://code.jquery.com/ui/1.8.18/jquery-ui.min.js"></script>
+		<!--Fetch the online copy of JqueryUI theme: "smoothness"-->
+		<link type="text/css" href="http://code.jquery.com/ui/1.8.18/themes/smoothness/jquery-ui.css" rel="stylesheet" />	
+
+		<!--JS for the app-->
+		<script src="mInteractions.js"></script>
+		<script src="mGeometry.js"></script>
+		<script src="mScene.js"></script>
+
+
+		<style type="text/css">
+
+			body {
+				overflow	: hidden;
+				padding		: 0;
+				margin		: 0;
+				color		: #222;
+				background-color: #F5F5F5;
+				font-family	: helvetica, arial;
+				font-size	: 100%;
+			}
+			#infopane {
+
+				line-height	: 9px;
+				color 		: #AAAAAA;
+				font-size	: 10px;
+			}
+			#infopane b.small {
+				font-size	: 11px;
+				color 		: #AAAAAA; 
+			}
+			#infopane b.large {
+				font-size	: 16px;
+				font-weight	: bold;
+				color 		: #AAAAAA; 
+			}
+			#container{
+				z-index		: 1;
+				position 	: absolute;
+				top			: 0px;
+				left		: 0px;
+			}
+			#title{
+				font-weight	: bolder;
+				font-size	: 25px;				
+				text-align	: center;
+				color 		: #FFFFFF;
+				font-family	: helvetica, arial;
+				text-shadow : #663300 2px 1px 20px
+			}
+			#title sup {
+				font-size	: 10px;		
+				font-weight	: bold;
+			}			
+			#subtitle {
+				font-size	: 9px;
+				font-family	: helvetica, arial;
+				line-height	: 100%;
+				color 		: #999999; 
+				text-align	: center;
+			}
+			#status{
+				font-weight	: bold;
+				font-size	: 10px;
+				color 		: #000000;
+			}
+			
+			div.img{
+				float 		: left;
+				padding 	: 1px;
+		    	position 	: relative;
+				z-index 	: 3;
+				height 		: 25px;
+				width 		: 25px;
+				z-index 	: 2000;
+			}
+			div.img img{
+			  	border 		: 1px solid #AAAAAA;
+			}
+			div.img a:hover img {border: 1px solid #FFFFFF;}
+			div.img a:active img {border: 1px solid #FF0000;}
+
+			#cursortextbox {
+			    position 	: absolute;
+			    float 		: left;
+				z-index 	: -1;
+				padding		: 5px;
+				font-size	: 10px;
+				max-width	: 200px;
+				background-color: #FFFFFF;
+				border: 1px solid #F8F8F8;
+				box-shadow: 0px 0px 15px #AAAAAA;
+			}​
+
+			#cursortextbox p {
+				font-weight	: bold;
+			}
+
+			#resizable { 
+				font-family	: helvetica, arial; 
+				width 		: 29px; 
+				height 		: 222px; 
+				padding 	: 2; 
+				z-index 	: 500;
+				left 		: 2px;
+				top 		: 2px;
+				box-shadow: 0px 0px 15px #AAAAAA;
+			}
+			#resizable h3 { 
+				font-size	: 9px;
+				text-align 	: center; 
+				margin 		: 0; 
+			}
+
+			.ui-dialog { position: absolute; padding: 2px; width: 300px; overflow: hidden; }
+			.ui-dialog .ui-dialog-titlebar { padding: 2px 4px; position: relative;  }
+			.ui-dialog .ui-dialog-title { float: left; margin: 0em 0px 0em 0; } 
+			.ui-dialog .ui-dialog-titlebar-close { position: absolute; right: 0em; top: 50%; width: 18px; margin: -10px 0 0 0; padding: 1px; height: 18px; }
+			.ui-dialog .ui-dialog-titlebar-close span { display: block; margin: 1px; }
+			.ui-dialog .ui-dialog-titlebar-close:hover, .ui-dialog .ui-dialog-titlebar-close:focus { padding: 0; }
+			.ui-dialog .ui-dialog-content { position: relative; border: 0; padding: 4px 6px; background: none; overflow: auto; zoom: 1; }
+			.ui-dialog .ui-dialog-buttonpane { text-align: left; border-width: 1px 0 0 0; background-image: none; margin: .5em 0 0 0; padding: .3em 1em .5em .4em; }
+			.ui-dialog .ui-dialog-buttonpane .ui-dialog-buttonset { float: right; }
+			.ui-dialog .ui-dialog-buttonpane button { margin: .5em .4em .5em 0; cursor: pointer; }
+			.ui-dialog .ui-resizable-se { width: 10px; height: 10px; right: 2px; bottom: 2px; }
+			.ui-draggable .ui-dialog-titlebar { cursor: move; }
+
+			.ui-widget { font-family: Helvetica,Arial; font-size: 10px; }
+			.ui-corner-all, .ui-corner-top, .ui-corner-left, .ui-corner-tl { -moz-border-radius-topleft: 2px; -webkit-border-top-left-radius: 2px; -khtml-border-top-left-radius: 2px; border-top-left-radius: 2px; }
+			.ui-corner-all, .ui-corner-top, .ui-corner-right, .ui-corner-tr { -moz-border-radius-topright: 2px; -webkit-border-top-right-radius: 2px; -khtml-border-top-right-radius: 2px; border-top-right-radius: 2px; }
+			.ui-corner-all, .ui-corner-bottom, .ui-corner-left, .ui-corner-bl { -moz-border-radius-bottomleft: 2px; -webkit-border-bottom-left-radius: 2px; -khtml-border-bottom-left-radius: 2px; border-bottom-left-radius: 2px; }
+			.ui-corner-all, .ui-corner-bottom, .ui-corner-right, .ui-corner-br { -moz-border-radius-bottomright: 2px; -webkit-border-bottom-right-radius: 2px; -khtml-border-bottom-right-radius: 2px; border-bottom-right-radius: 2px; }
+
+		</style>
+
+		<script>
+			$(function() {
+				$( "#dialog-form" ).dialog({
+					autoOpen: true,
+					height: 300,
+					width: 350,
+					modal: true,
+					buttons: {
+						"Create an account": function() {
+							var bValid = true;
+							allFields.removeClass( "ui-state-error" );
+
+							bValid = bValid && checkLength( name, "username", 4, 16 );
+
+							if ( bValid ) {
+								$( "#users tbody" ).append( "<tr>" +
+									"<td>" + name.val() + "</td>" + 
+									"<td>" + email.val() + "</td>" + 
+									"<td>" + password.val() + "</td>" +
+								"</tr>" ); 
+								$( this ).dialog( "close" );
+							}
+						},
+						Cancel: function() {
+							$( this ).dialog( "close" );
+						}
+					},
+					close: function() {}
+				});
+
+				// Toolbar JqueryUI Dialog box	
+				$('#toolbardialog').dialog({
+					autoOpen: true,
+					width: 230,
+					height: 55,
+					minHeight: 55,
+					minWidth: 42,
+					zIndex: 200,
+					position: [2,2]
+				});
+
+				// Statusbar JqueryUI Dialog box		
+				$('#status').dialog({
+					autoOpen: true,
+					width: 230,
+					height: 90,
+					minHeight: 90,
+					minWidth: 170,
+					zIndex: 200,
+					position: [2,65]
+				});
+
+				// Properties Dialog RENAME 			
+				$('#dialog').dialog({
+					autoOpen: true,
+					width: 230,
+					height: 92,
+					minHeight: 90,
+					minWidth: 170,
+					zIndex: 200,
+					position: [2,163]
+				});
+
+				// Info pane JqueryUI Dialog box		
+				$('#infopane').dialog({
+					autoOpen: true,
+					width: 230,
+					height: 100,
+					minHeight: 90,
+					minWidth: 230,
+					zIndex: 200,
+					position: [2,264]
+				});
+
+				//prevent orbit when dragging around JqueryUI dialog windows
+				$( "#toolbardialog" ).bind( "dialogdrag", function(event, ui) {
+					g_viewing = false;
+				});
+				$( "#status" ).bind( "dialogdrag", function(event, ui) {
+					g_viewing = false;
+				});
+				$( "#dialog" ).bind( "dialogdrag", function(event, ui) {
+					g_viewing = false;
+				});
+				$( "#infopane" ).bind( "dialogdrag", function(event, ui) {
+					g_viewing = false;
+				});
+
+				//prevent orbit when resizing JqueryUI dialog windows
+				$( "#toolbardialog" ).bind( "dialogresize", function(event, ui) {
+					g_viewing = false;
+				});
+				$( "#status" ).bind( "dialogresize", function(event, ui) {
+					g_viewing = false;
+				});
+				$( "#dialog" ).bind( "dialogresize", function(event, ui) {
+					g_viewing = false;
+				});
+				$( "#infopane" ).bind( "dialogresize", function(event, ui) {
+					g_viewing = false;
+				});
+
+			});
+		</script>
+
+	</head>
+	<body>
+
+		<!-- three.js container -->
+		<div id="dialog-form" title="Login">
+			<p class="validateTips">Enter Screen Name:</p>
+
+			<form>
+				<fieldset>
+					<label for="name">Name</label>
+					<input type="text" name="name" id="name" class="text ui-widget-content ui-corner-all" />
+				</fieldset>
+			</form>
+		</div>
+	    <div id="container">
+	    	<div id="dialog" title="Properties">
+				Properties will show here...
+			</div>
+
+			<div id="status" title="Status Bar">
+
+			</div>
+
+			<div id="infopane" title="Info">
+
+				<br>
+
+				<div id="title">Sandbox3D<sup>&nbsp;alpha</sup></div>
+
+				<br>
+				<br>
+
+				<div id="subtitle">
+				experimental web app for design collaboration<br>
+				harvard mdess thesis project by eddy man kim<br>
+
+
+				<br>
+				more information below..
+
+				</div>
+				<br>
+				<br>
+
+				<b class="small">
+					Basic Navigation:
+				</b>
+
+				<br>
+
+				ZOOM: Mouse Scroll or Hold "S" Key
+
+				<br>
+
+				PAN: Right Mouse Buttom or Hold "D" Key
+
+				<br>
+
+				ORBIT: Left Mouse Button or Hold "A" Key
+
+				<br>
+				<br>
+
+				<b class="small">
+					Powered by:
+				</b>
+
+				<br>
+
+				three.js <br> node.js<br> mongoose.js<br> jquery<br> jqueryui<br> mongodb<br> cloudfoundry
+
+				<br>
+				<br>
+
+				<div id="subtitle">
+					For more information please e-mail mkim3@gsd.harvard.edu
+				</div>
+				
+
+			</div>
+
+			<div id="toolbardialog" title="Tools">
+			    <div id="lockviewbutton" class="img" >
+					<a><img src="img/button_lockview.jpg" onclick = "toggleLockViewMode();" alt="viewmodebutton" width="25" height="25" /></a>
+				</div>
+
+				<div id="cleardbbutton" class="img">
+					<a><img src="img/button_clear.jpg" onclick = "clearMongoDB();" alt="clearbutton" width="25" height="25" /></a>
+				</div>
+
+				<div id="resetbutton" class="img">
+					<a><img src="img/button_reset.jpg" onclick = "clearAllToolsSelections();" alt="clearbutton" width="25" height="25" /></a>
+				</div>
+
+				<div id="nodebutton" class="img">
+					<a><img src="img/button_node.jpg" onclick = "changeToNodeTool()" alt="nodebutton" width="25" height="25" /></a>
+				</div>
+
+				<div id="dotsbutton" class="img">
+					<a><img src="img/button_dots.jpg" onclick = "changeToDotsTool()" alt="dotsbutton" width="25" height="25" /></a>
+				</div>
+
+				<div id="linebutton" class="img">
+					<a><img src="img/button_line.jpg" onclick = "changeToLineTool()" alt="linebutton" width="25" height="25" /></a>
+				</div>
+
+				<div id="polylinebutton" class="img">
+					<a><img src="img/button_polyline.jpg" onclick = "changeToPolylineTool()" alt="polylinebutton" width="25" height="25" /></a>
+				</div>
+
+				<div id="facebutton" class="img">
+					<a><img src="img/button_face.jpg" onclick = "changeToFaceTool()" alt="facebutton" width="25" height="25" /></a>
+				</div>		
+			</div>
+	    </div>
+
+
+
+	    <canvas id="gradientbg" style="z-index: 0; position:absolute; left:0px; top:0px; height:100%; width:100%;" ></canvas>
+
+
+		<!--testing it out-->
+		<div id="cursortextbox"> </div>​
+
+		<script id="fragment_shader3" type="x-shader/x-fragment">
+
+			uniform float time;
+			uniform vec2 resolution;
+
+			varying vec2 vUv;
+
+			void main( void ) {
+
+				vec2 position = vUv;
+
+				float color = 0.0;
+				color += sin( position.x * cos( time / 15.0 ) * 80.0 ) + cos( position.y * cos( time / 15.0 ) * 10.0 );
+				color += sin( position.y * sin( time / 10.0 ) * 40.0 ) + cos( position.x * sin( time / 25.0 ) * 40.0 );
+				color += sin( position.x * sin( time / 5.0 ) * 10.0 ) + sin( position.y * sin( time / 35.0 ) * 80.0 );
+				color *= sin( time / 10.0 ) * 0.5;
+
+				gl_FragColor = vec4( vec3( color, color * 0.5, sin( color + time / 3.0 ) * 0.75 ), 1.0 );
+
+			}
+
+		</script>
+
+		<script>
+			
+			var g_statusboxtext = "";
+			document.getElementById('status').innerHTML	= g_statusboxtext + "Loading... if it gets stuck, you will need a better browser :(";
+
+			var container, containerontop, stats;
+			var camera, scene, theScene, projector, renderer, rendererontop, cameraControls;
+			var particleMaterial;
+			var g_haswebgl, g_selected, g_viewing = true, g_locked = false, g_cameramoving = false;
+			var g_whichbutton=0, 
+				g_nobutton=0,
+				g_nodebutton=1,
+				g_dotsbutton=2,
+				g_linebutton=3,
+				g_polylinebutton=4,
+				g_facebutton=5;
+
+			var g_whichaxis=0, 
+				g_noaxis=0, 
+				g_xaxis=1,
+				g_yaxis=2,
+				g_zaxis=3;
+
+			var g_prev_mouse = { x: 0, y: 0 },
+				g_mouse = { x: 0, y: 0 };
+
+			var n0=null, n1=null, n2=null;
+			
+			var gridSize = 400;
+			var gridNum = 20;
+			var halfGridSize = gridSize*0.5;
+			var gridInterval = gridSize/gridNum;
+
+			var PI2 = Math.PI * 2;
+
+			var objects = [];
+
+			var ballimg = THREE.ImageUtils.loadTexture("img/ball.png");
+			var ballselectedimg = THREE.ImageUtils.loadTexture("img/ballselected.png");
+
+			var g_nodeobjects = [];
+
+			var g_axishelper;
+
+			var offset = new THREE.Vector3();
+			var INTERSECTED, SELECTED, SELECTED_id;
+			var plane, plane2;
+
+			var g_defaultnodesize = 0.025;
+
+			var g_cleared = false;
+
+			var g_cursortextbox = document.getElementById('cursortextbox'),
+				g_statustextbox = document.getElementById('status'),
+				g_dialogbox = document.getElementById('dialog');
+
+			var gradientbg, ctx_gradientbg;
+
+			var g_loaded = false;
+			var g_movingsomething = false,
+				g_doingdots = false;
+
+
+			var loader = new THREE.ColladaLoader();
+			loader.options.convertUpAxis = true;
+			loader.load( './models/test.dae', function colladaReady( collada ) {
+
+				dae = collada.scene;
+				skin = collada.skins[ 0 ];
+
+				//for shadow
+				/*for(var i=0; i<dae.children[0].children.length; ++i){
+					var daemesh = dae.children[0].children[i];
+					daemesh.castShadow = true;
+					daemesh.receiveShadow = true;
+				}*/
+
+				
+				dae.scale.x = dae.scale.y = dae.scale.z = 1;
+				dae.position.set(0,0,0);
+				dae.updateMatrix();
+				dae.updateMatrixWorld();
+
+				init();
+				animate();
+
+
+
+			} );
+
+			function AddDaeVertices(obj){
+				//obj.updateMatrix();
+				//obj.updateMatrixWorld();
+				/*if(obj.children.length>0){
+					console.log(obj.children[0].children.length);
+					for(var i=0; i<obj.children[0].children.length; ++i){
+						var temp = obj.children[0].children[i];
+						for(var j=0; j<temp.geometry.vertices.length; ++j){
+							//tempvtxpositionstore.push(new THREE.Vector3(obj.matrixWorld.multiplyVector3(temp.geometry.vertices[j].position)));
+							var t0 = obj.matrixWorld.multiplyVector3(temp.geometry.vertices[j].position);
+							//var t0 = temp.geometry.vertices[j].position;
+							theScene.AddNode(t0.x, t0.y, t0.z);
+						}
+					}
+				}*/
+
+
+				if (obj.geometry!=undefined && obj.geometry!=null && obj.geometry.vertices!=undefined && obj.geometry.vertices!=null) {
+
+
+
+					for(var i=0; i<obj.geometry.vertices.length; ++i){
+						var t0 = obj.matrixWorld.multiplyVector3(obj.geometry.vertices[i].position);
+						theScene.AddNode(t0.x, t0.y, t0.z);			
+					}
+				}
+
+				if (obj.children==null || obj.children==undefined || obj.children.length==0) return;
+				for(var i=0; i<obj.children.length; ++i) {
+					AddDaeVertices(obj.children[i]);
+				}
+			}
+
+			function AddModelVertices(obj) {
+				//obj.updateMatrix();
+				//obj.updateMatrixWorld();
+				//var temp;
+				if (obj.geometry!=undefined && obj.geometry!=null && obj.geometry.vertices!=undefined && obj.geometry.vertices!=null) {
+
+					//var tempvtxpositionstore = [];
+					//var t0, t1, t2, n0, n1, n2;
+
+					for(var i=0; i<obj.geometry.vertices.length; ++i){
+
+						//t0 = obj.matrixWorld.multiplyVector3(obj.geometry.vertices[i].position);
+						//theScene.AddNode(t0.y, t0.z, t0.x);
+						//t0 = null;
+
+						if(g_haswebgl) {
+							var pt = new THREE.Sprite({ map: ballimg, useScreenCoordinates: false, alignment: THREE.SpriteAlignment.center , affectedByDistance : false});
+							var temp = obj.matrixWorld.multiplyVector3(obj.geometry.vertices[i].position);
+							pt.position = temp;
+							//theScene.AddNode(temp.x, temp.y, temp.z);
+							pt.scale.x = pt.scale.y = g_defaultnodesize*2;
+							scene.add( pt );
+						}
+						if(!g_haswebgl) {
+							var pt = new THREE.Particle( new THREE.ParticleCanvasMaterial({color: 0x000000,program: programStroke}) );
+							pt.position = obj.matrixWorld.multiplyVector3(obj.geometry.vertices[i].position);
+							pt.scale.x = pt.scale.y = 8;
+							scene.add( pt );
+						}
+
+						//tempvtxpositionstore.push(new THREE.Vector3(obj.matrixWorld.multiplyVector3(obj.geometry.vertices[i])));
+
+						//var pt = new THREE.Particle( new THREE.ParticleCanvasMaterial({color: 0x000000,program: programStroke}) );
+
+						//pt.position = new THREE.Vector3(obj.matrixWorld.multiplyVector3(obj.geometry.vertices[i]));
+
+						//tempvtxpositionstore.push(new THREE.Vector3(obj.matrixWorld.multiplyVector3(obj.geometry.vertices[i])));
+						//temp = obj.matrixWorld.multiplyVector3(obj.geometry.vertices[i]);
+						//theScene.AddNode(temp.x, temp.y, temp.z);
+						
+					}
+
+					/*for(var i=0; i<obj.geometry.vertices.length; ++i){
+
+						if(i=0)console.log("group of vertices");
+
+						console.log(obj.geometry.vertices[i].position.x+" , "+obj.geometry.vertices[i].position.y+" , "+obj.geometry.vertices[i].position.z);
+
+					}*/
+
+					/*for(var i=0; i<obj.geometry.faces.length; ++i){
+						//the only difference is the a,b,c...
+						t0 = obj.matrixWorld.multiplyVector3( obj.geometry.vertices[ obj.geometry.faces[i].a ].position );
+						t1 = obj.matrixWorld.multiplyVector3( obj.geometry.vertices[ obj.geometry.faces[i].b ].position );
+						t2 = obj.matrixWorld.multiplyVector3( obj.geometry.vertices[ obj.geometry.faces[i].c ].position );
+
+						n0 = theScene.AddNode(t0.y, t0.z, t0.x);
+						n1 = theScene.AddNode(t1.y, t1.z, t1.x);
+						n2 = theScene.AddNode(t2.y, t2.z, t2.x);
+
+						theScene.AddFace(n0,n1,n2);
+						
+						//obj.geometry.vertices[t0]
+					}*/
+				}
+
+				if (obj.children==null || obj.children==undefined || obj.children.length==0) return;
+				for(var i=0; i<obj.children.length; ++i) {
+					AddModelVertices(obj.children[i]);
+				}
+			}
+
+			function init() {
+				
+				if( Detector.webgl ){
+					g_haswebgl=true;
+					renderer = new THREE.WebGLRenderer({
+						antialias		: false,	// to get smoother output
+						preserveDrawingBuffer	: true	// to allow screenshot
+					});
+				}else{
+					g_haswebgl=false;
+					renderer	= new THREE.CanvasRenderer();
+				}
+
+				//for background gradient
+				gradientbg = document.getElementById("gradientbg");
+				ctx_gradientbg = gradientbg.getContext("2d");
+				ctx_gradientbg.clearRect(0, 0, window.innerWidth, window.innerHeight);
+				var lingrad = ctx_gradientbg.createLinearGradient(0,0,0,60);				
+				lingrad.addColorStop(0, '#AAAAAA');
+				lingrad.addColorStop(1, '#FFFFFF');
+				ctx_gradientbg.fillStyle = lingrad;
+				ctx_gradientbg.fillRect(0,0,window.innerWidth,window.innerHeight);
+
+				//haswebgl = false;
+				//renderer = new THREE.CanvasRenderer();
+				
+				//renderer.setClearColorHex( 0xF5F5F5, 0.5 );
+				renderer.setSize( window.innerWidth, window.innerHeight );
+				renderer.shadowMapEnabled = true;
+				renderer.shadowMapSoft = true;
+				//NOT SURE??
+				renderer.sortObjects = true;
+
+				container = document.getElementById('container');
+				container.appendChild(renderer.domElement);
+
+				lockviewbutton = document.getElementById('lockviewbutton');
+
+				theScene=new mScene();
+
+			    theScene.RequestServerUpdate();
+			    g_loaded = true;
+
+			    theScene.Render();
+
+				camera = new THREE.PerspectiveCamera( 60, window.innerWidth / window.innerHeight, 1, 10000 );
+				camera.position.set( -300, 300, -200 );
+
+				scene = new THREE.Scene();
+				
+				scene.fog = new THREE.FogExp2( 0xFFFFFF, 0.001 );
+
+				scene.add( camera );
+
+				// create a camera contol
+				cameraControls	= new THREE.TrackballTouchControls( camera );
+				// transparently support window resize
+				THREEx.WindowResize.bind(renderer, camera);
+				// allow 'p' to make screenshot
+				THREEx.Screenshot.bindKey(renderer);
+
+				// add objects here
+				projector = new THREE.Projector();
+				
+				// some code for a grid on the x-y plane
+				var glineMaterial = new THREE.LineBasicMaterial({ color: 0xBDBDBD, linewidth: 0.2, depthTest: true});
+				var xAxesMaterial = new THREE.LineBasicMaterial({ color: 0xBDBDBD, linewidth: 2.0,});
+				var yAxesMaterial = new THREE.LineBasicMaterial({ color: 0xBDBDBD, linewidth: 2.0,});
+				var zAxesMaterial = new THREE.LineBasicMaterial({ color: 0xBDBDBD, linewidth: 2.0,});
+				for ( var i = 0; i < gridNum+1; i ++ ) {
+					var gridLines = new THREE.Geometry();
+	    			gridLines.vertices.push(new THREE.Vertex(new THREE.Vector3(-halfGridSize, 0.1, -halfGridSize+gridInterval*i)));
+	    			gridLines.vertices.push(new THREE.Vertex(new THREE.Vector3(halfGridSize, 0.1, -halfGridSize+gridInterval*i)));
+	    			var line1 = new THREE.Line(gridLines, glineMaterial);
+	    			scene.add(line1);
+				}
+				for ( var i = 0; i < gridNum+1; i ++ ) {
+					var gridLines = new THREE.Geometry();
+	    			gridLines.vertices.push(new THREE.Vertex(new THREE.Vector3(-halfGridSize+gridInterval*i, 0, -halfGridSize)));
+	    			gridLines.vertices.push(new THREE.Vertex(new THREE.Vector3(-halfGridSize+gridInterval*i, 0, halfGridSize)));
+	    			var line1 = new THREE.Line(gridLines, glineMaterial);
+	    			scene.add(line1);
+				}
+				
+				//Z axis in blue
+				var zLineGeo = new THREE.Geometry();
+				zLineGeo.vertices.push(new THREE.Vertex(new THREE.Vector3(0, 0, 0)));
+				zLineGeo.vertices.push(new THREE.Vertex(new THREE.Vector3(0, 25, 0)));
+				var zLine = new THREE.Line(zLineGeo, zAxesMaterial);
+				scene.add(zLine);
+				//Y axis in green
+				var yLineGeo = new THREE.Geometry();
+				yLineGeo.vertices.push(new THREE.Vertex(new THREE.Vector3(0, 0, 0)));
+				yLineGeo.vertices.push(new THREE.Vertex(new THREE.Vector3(halfGridSize, 0, 0)));
+				var yLine = new THREE.Line(yLineGeo, yAxesMaterial);
+				scene.add(yLine);
+				//X axis in red
+				var xLineGeo = new THREE.Geometry();
+				xLineGeo.vertices.push(new THREE.Vertex(new THREE.Vector3(0, 0, 0)));
+				xLineGeo.vertices.push(new THREE.Vertex(new THREE.Vector3(0, 0, halfGridSize)));
+				var xLine = new THREE.Line(xLineGeo, xAxesMaterial);
+				scene.add(xLine);
+
+				plane = new THREE.Mesh(new THREE.PlaneGeometry(gridSize, gridSize, 20, 20), new THREE.MeshBasicMaterial( { color: 0xFFFFFF, opacity: 0} ));
+			
+				//plane.doubleSided = true;
+				//plane.dynamic = true;
+				//plane.castShadow = true;
+				//plane.receiveShadow = true;
+				plane.rotation.x = - 90 * Math.PI / 180;
+				scene.add( plane );			
+
+				plane2 = new THREE.Mesh( new THREE.PlaneGeometry( 2000, 2000, 8, 8 ), new THREE.MeshBasicMaterial( { color: 0x000000, opacity: 0, transparent: true, wireframe: false } ) );
+				plane2.rotation.x = - 90 * Math.PI / 180;
+				plane2.visible = false;
+				scene.add( plane2 );
+
+				g_axishelper = new THREE.AxisHelperModified();
+				g_axishelper.scale.x = g_axishelper.scale.y = g_axishelper.scale.z = 0.25;
+				g_axishelper.position.set(10000,10000,10000);
+				scene.add( g_axishelper );
+
+		        if(g_haswebgl){
+		        	
+			        // create a point light
+					var pointLight = new THREE.PointLight(0xFFFFFF);
+					// set its position
+					pointLight.position.x = -1000;
+					pointLight.position.y = 500;
+					pointLight.position.z = 1000;
+					// add to the scene
+					scene.add(pointLight);
+
+					// create another point light
+					var pointLight2 = new THREE.PointLight(0xFFFFFF);
+					// set its position
+					pointLight2.position.x = 500;
+					pointLight2.position.y = 1000;
+					pointLight2.position.z = -500;
+					// add to the scene
+					scene.add(pointLight2);
+
+					// create another point light
+					var pointLight2 = new THREE.PointLight(0xFFFFFF);
+					// set its position
+					pointLight2.position.x = 500;
+					pointLight2.position.y = -1000;
+					pointLight2.position.z = -100;
+					// add to the scene
+					scene.add(pointLight2);
+					
+
+					/*scene.add( new THREE.AmbientLight( 0x202020 ) );
+
+					var light = new THREE.SpotLight( 0xffffff, 2.5);
+					light.position.set( -1000, 1000, -500 );
+					light.castShadow = true;
+
+					light.shadowCameraNear = 100;
+					light.shadowCameraFar = camera.far;
+					light.shadowCameraFov = 60;
+
+					light.shadowBias = -0.00022;
+					light.shadowDarkness = 0.75;
+
+					light.shadowMapWidth = window.innerWidth*4;
+					light.shadowMapHeight = window.innerHeight*4;
+
+					scene.add( light );*/
+
+					scene.add( dae );
+				}
+				
+				AddModelVertices(dae);
+				//AddDaeVertices(dae);
+
+				//This is for the stats visualization on the bottom left of the screen
+				stats = new Stats();
+				stats.domElement.style.position = 'absolute';
+				stats.domElement.style.bottom = '0px';
+				container.appendChild( stats.domElement );
+
+				document.getElementById('status').innerHTML	= g_statusboxtext + "Just viewing...";
+
+				//bind mouse events to the div 'container' with the threejs rendering
+				container.addEventListener( 'touchstart', onTouchStart, false );
+
+				container.addEventListener( 'mousedown', onDocumentMouseDown, false );
+				container.addEventListener( 'mouseup', onDocumentMouseUp, false );
+				container.addEventListener( 'mousemove', onDocumentMouseMove, false );
+
+
+				window.addEventListener( 'keydown', onKeyDown, false );
+
+				$('div.img img').mousemove(function(event) {		            
+					$('#cursortextbox').css({
+				       left:  event.pageX + 10,
+				       top:   event.pageY,
+				    });
+		        });
+
+		        $('div.img img').mouseover(function() {
+				    $('#cursortextbox').css('z-index', 1000);	
+
+					$('#lockviewbutton').mouseover(function() {
+				    	g_cursortextbox.innerHTML	= "This button will LOCK your view..";
+			        });
+			        $('#cleardbbutton').mouseover(function() {
+				    	g_cursortextbox.innerHTML	= "This button will CLEAR all geometries on the database... BUG: doesn't always clear.. keep pressing until cleared";
+			        });	
+			        $('#nodebutton').mouseover(function() {
+				    	g_cursortextbox.innerHTML	= "Repeatedly create NODES.. press SPACEBAR to stop";
+			        });	
+			        $('#resetbutton').mouseover(function() {
+				    	g_cursortextbox.innerHTML	= "This button will clear all active tools and selections";
+			        });	
+			        $('#linebutton').mouseover(function() {
+				    	g_cursortextbox.innerHTML	= "Repeatedly create LINES.. press SPACEBAR to stop";
+			        });		
+			        $('#polylinebutton').mouseover(function() {
+				    	g_cursortextbox.innerHTML	= "This doesn't work yet";
+			        });	
+			        $('#facebutton').mouseover(function() {
+				    	g_cursortextbox.innerHTML	= "Repeatedly create FACES.. press SPACEBAR to stop";
+			        });	
+			        $('#dotsbutton').mouseover(function() {
+				    	g_cursortextbox.innerHTML	= "Create a string of NODES.. press SPACEBAR to stop";
+			        });				    
+		        });
+
+		        $('div.img img').mouseout(function() {
+			    	$('#cursortextbox').css('z-index', -1);
+		        });
+
+		        
+
+			}
+
+			function PickNode(x, y) {
+				var cnode=null;
+				var dist=9999999999999.0;
+
+				//go through all the local copies...
+				for (var k=0; k<theScene.Objects.length;++k){
+					var o=theScene.Objects[k];
+					if (o.Type!=NodeTypeId) continue;
+					o.p2=projector.projectVector( new THREE.Vector3(o.Data.geom.Y, o.Data.geom.Z, o.Data.geom.X), camera );
+					var dx=o.p2.x-x;
+					var dy=o.p2.y-y;
+					var d=dx*dx+dy*dy;
+					if (dist>d) {
+						dist=d;
+						cnode=o;
+					}
+				}
+
+				if (dist<0.0005) return cnode;
+				return null;
+			}
+
+			var g_SmoothSelection=[];
+
+			function Unselect() {
+				g_SmoothSelection.length=0;
+
+					for (var k=0; k<theScene.Objects.length;++k){
+						var o=theScene.Objects[k];
+						if (o.Type!=NodeTypeId) continue;
+						o.SelectionWeight=undefined;
+						if(g_haswebgl){
+							o.GLobj.scale.x=o.GLobj.scale.y=g_defaultnodesize;
+							o.GLobj.map=ballimg;
+						}
+						if(!g_haswebgl){
+							o.GLobj.material.program = programStroke;
+							o.GLobj.material.color.setHex( 0x000000 );							
+							o.GLobj.scale.x=o.GLobj.scale.y=g_defaultnodesize*250;
+						}
+					}
+			}
+			
+			function SelectNodesSmooth(p0, R, D, reset) {
+				if (reset) {
+					Unselect();
+				}
+
+				var R2=R*R;
+				for (var k=0; k<theScene.Objects.length;++k){
+					var o=theScene.Objects[k];
+					if (o.Type!=NodeTypeId) continue;
+					var d2=o.GLobj.position.distanceToSquared(p0);
+
+
+					if (d2<=R2) {
+						
+						var newWeight=(1.0-d2/R2);
+						if (o.SelectionWeight==undefined || o.SelectionWeight<newWeight) {
+							if (o.SelectionWeight==undefined) g_SmoothSelection.push(o);
+
+							o.SelectionWeight=newWeight;
+							if(g_haswebgl) {
+								o.GLobj.map=ballselectedimg;
+								o.GLobj.scale.x=o.GLobj.scale.y=g_defaultnodesize+(o.SelectionWeight*g_defaultnodesize);
+								//o.GLobj.scale.x = o.SelectionWeight*0.1;
+								//o.GLobj.scale.y = o.SelectionWeight*0.1;
+							}
+							if(!g_haswebgl){
+								o.GLobj.material.program = programFill;
+								o.GLobj.material.color.setHex( 0xFF0000 );
+								o.GLobj.scale.x=o.GLobj.scale.y=(g_defaultnodesize+(o.SelectionWeight*g_defaultnodesize))*250;
+							}
+						}
+					}
+					else {
+
+						if(g_haswebgl) {
+								
+							o.GLobj.map=ballimg;
+							o.GLobj.scale.x=o.GLobj.scale.y=g_defaultnodesize;
+
+							}
+						if(!g_haswebgl){
+							o.GLobj.material.program = programStroke;
+							o.GLobj.material.color.setHex( 0x000000 );							
+							o.GLobj.scale.x=o.GLobj.scale.y=g_defaultnodesize*250;
+						}
+
+					}
+				}
+			}
+
+			function deleteSelected (){
+				if ( SELECTED ) {
+					scene.remove(SELECTED);
+					clearAllToolsSelections();
+				}
+			}
+
+			function animate() {
+
+				requestAnimationFrame( animate );
+
+				render();
+				stats.update();
+
+			}
+
+			function render() {
+
+				// update camera controls
+				if(g_viewing && !g_locked) cameraControls.update();
+
+				renderer.render( scene, camera );
+				if(!g_movingsomething) theScene.Render();
+
+			}
+
+			//automatic updates every 3 seconds (3000ms)
+			setInterval ( "automaticUpdates()", 3000 );
+
+			function automaticUpdates (){
+				
+				if(g_whichbutton==g_nobutton && g_movingsomething==false) theScene.RequestServerUpdate();
+			}
+
+			//functions for img button clicks
+			function toggleLockViewMode (){
+				g_locked = !g_locked;
+				if (g_locked) g_statustextbox.innerHTML	= g_statusboxtext + "View locked...";
+				else g_statustextbox.innerHTML	= g_statusboxtext + "View unlocked...";
+			}
+
+			function changeToNodeTool (){
+				g_whichbutton = g_nodebutton;
+				g_statustextbox.innerHTML	= g_statusboxtext + "Adding NODES... press SPACEBAR to stop";
+				console.log("changed to node tool");
+			}
+
+			function changeToLineTool (){
+				g_whichbutton = g_linebutton;
+				g_statustextbox.innerHTML	= g_statusboxtext + "Adding LINES... press SPACEBAR to stop";
+				console.log("changed to line tool");
+			}
+
+			function changeToPolylineTool (){
+				g_whichbutton = g_polylinebutton;
+				g_statustextbox.innerHTML	= g_statusboxtext + "Adding LINES... press SPACEBAR to stop";
+				console.log("changed to polyline tool");
+			}
+
+			function changeToFaceTool (){
+				g_whichbutton = g_facebutton;
+				g_statustextbox.innerHTML	= g_statusboxtext + "Adding FACES... press SPACEBAR to stop";
+				console.log("changed to face tool");
+			}
+
+			function changeToDotsTool (){
+				g_whichbutton = g_dotsbutton;
+				g_statustextbox.innerHTML	= g_statusboxtext + "Add a string of nodes... press SPACEBAR to stop";
+				console.log("changed to nodes tool");
+			}
+
+			function clearMongoDB (){
+
+				//g_cleared = true;
+				theScene.ClearMongoDB();
+				//change the status text to alert the user
+				g_statustextbox.innerHTML	= g_statusboxtext + "CLEAR FAILED.. click CLEAR button again..";
+
+				//only when g_cleared is true will the page refresh itself
+				if(g_cleared)location.reload();
+
+				//theScene.Objects.length = 0;
+				//Unselect();
+				//theScene.RequestServerUpdate();
+				//g_axishelper.position.set(10000,10000,10000);
+			}
+
+			function clearAllToolsSelections() {
+
+				g_whichbutton = g_nobutton;
+				g_locked = false;
+				g_movingsomething = false;
+				//send the gizmo far away again
+				g_axishelper.position.set(10000,10000,10000);
+				Unselect();
+				document.getElementById('status').innerHTML	= g_statusboxtext + "All tools and selections disabled.. just viewing";
+				console.log("tools cleared...");
+			}
+
+			function updateNodeXYZ (threejsobj, _id){
+				theScene.updateNodeXYZ(threejsobj, _id);
+			}
+
+			var programFill = function ( context ) {
+
+				context.clearRect();
+				context.beginPath();
+				context.arc( 0, 0, 0.2, 0, PI2, true );
+				context.closePath();
+				context.fill();
+			}
+
+			var programStroke = function ( context ) {
+
+				context.clearRect();
+				context.beginPath();
+				context.arc( 0, 0, 0.2, 0, PI2, true );
+				context.fillStyle = "white";
+				context.fill();
+				context.lineWidth = 0.1;
+				context.stroke();
+				context.closePath();
+			}
+
+		</script>
+
+	</body>
+</html>
