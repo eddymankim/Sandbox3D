@@ -1,6 +1,6 @@
 # Sandbox3D
 
-###Web-based 3D Sandbox / Collboration Interface
+###Web-based 3D Sandbox / Collaboration Interface
 
 Part of a GSD MDes Thesis Project that's built on jquery, nodejs, threejs, and mongodb.
 
